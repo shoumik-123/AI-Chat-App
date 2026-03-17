@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @map("session_id")    // Maps to session_id column
+  role      String   @db.VarChar(10)       // VARCHAR(10) to match your SQL
+  content   String   @db.Text               // TEXT to match your SQL
+  createdAt DateTime @default(now()) @map("created_at") // Maps to created_at column
+
+  @@map("chat_messages")  // Table name matches exactly
+}

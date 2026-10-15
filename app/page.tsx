@@ -2,13 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 
+type ChatMessage = { role: "user" | "assistant"; content: string };
+type ChatSession = { id: string; preview: string; timestamp: number };
+
 export default function Home() {
   const [message, setMessage] = useState("");
-  const [chat, setChat] = useState([]);
+  const [chat, setChat] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState("");
   const [error, setError] = useState("");
-  const [chatSessions, setChatSessions] = useState([]); // Store all chat sessions
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([]);
   const messagesEndRef = useRef(null);
 
   // Generate or load session ID on component mount
@@ -31,7 +34,7 @@ export default function Home() {
 
   const loadSavedSessions = () => {
     // Get all sessions from localStorage
-    const sessions = [];
+    const sessions: ChatSession[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith("chat_session_")) {
@@ -48,7 +51,7 @@ export default function Home() {
     setChatSessions(sessions);
   };
 
-  const loadChatHistory = async (sid) => {
+  const loadChatHistory = async (sid: string) => {
     try {
       const res = await fetch(`/api/chat?sessionId=${sid}`);
       const data = await res.json();
@@ -108,7 +111,7 @@ export default function Home() {
       loadSavedSessions();
 
     } catch (err) {
-      setError(err.message);
+      setError(err instanceof Error ? err.message : String(err));
       console.error("Error:", err);
     } finally {
       setLoading(false);
@@ -133,7 +136,7 @@ export default function Home() {
     loadSavedSessions();
   };
 
-  const switchChat = (newSessionId) => {
+  const switchChat = (newSessionId: string) => {
     // Save current session preview
     if (chat.length > 0) {
       localStorage.setItem(`chat_session_${sessionId}`, JSON.stringify({
@@ -148,7 +151,7 @@ export default function Home() {
     loadChatHistory(newSessionId);
   };
 
-  const deleteChat = (sessionIdToDelete) => {
+  const deleteChat = (sessionIdToDelete: string) => {
     // Remove from localStorage
     localStorage.removeItem(`chat_session_${sessionIdToDelete}`);
     
@@ -354,7 +357,7 @@ export default function Home() {
                       sendMessage();
                     }
                   }}
-                  rows="1"
+                  rows={1}
                   style={{ minHeight: '60px', maxHeight: '150px' }}
                 />
                 <button

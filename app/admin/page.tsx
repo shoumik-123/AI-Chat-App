@@ -35,9 +35,9 @@ async function getStats() {
 
     // Test 4: Raw query
     console.log("Running raw query...");
-    let messagesByDay = [];
+    let messagesByDay: { date: Date; count: bigint }[] = [];
     try {
-      messagesByDay = await prisma.$queryRaw`
+      messagesByDay = await prisma.$queryRaw<{ date: Date; count: bigint }[]>`
         SELECT 
           DATE(created_at) as date,
           COUNT(*) as count
@@ -57,13 +57,20 @@ async function getStats() {
       totalMessages,
       totalSessions,
       recentMessages: JSON.parse(JSON.stringify(recentMessages)),
-      messagesByDay: JSON.parse(JSON.stringify(messagesByDay)),
+      messagesByDay: messagesByDay.map(({ date, count }) => ({
+        date: date.toISOString(),
+        count: Number(count),
+      })),
     };
   } catch (error) {
     console.error("=== ERROR FETCHING STATS ===");
-    console.error("Error name:", error.name);
-    console.error("Error message:", error.message);
-    console.error("Error stack:", error.stack);
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+    } else {
+      console.error("Error:", error);
+    }
     return null;
   }
 }

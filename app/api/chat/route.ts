@@ -1,10 +1,9 @@
 import prisma from "@/lib/prisma";
 import Groq from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 export async function POST(req: Request) {
   try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const { message, sessionId } = await req.json();
 
     if (!message || !sessionId) {
@@ -50,7 +49,11 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error in chat API:", error);
     return Response.json(
-      { error: "Internal server error: " + (error.message || "Unknown error") },
+      {
+        error:
+          "Internal server error: " +
+          (error instanceof Error ? error.message : "Unknown error"),
+      },
       { status: 500 }
     );
   }
